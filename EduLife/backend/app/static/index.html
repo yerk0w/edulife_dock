@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система документооборота</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            margin-right: 5px;
+            border-radius: 4px 4px 0 0;
+            transition: all 0.3s;
+        }
+        .tab.active {
+            border-color: #ddd;
+            background-color: #fff;
+            border-bottom: 2px solid #3498db;
+            color: #3498db;
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        input[type="text"], 
+        input[type="password"], 
+        input[type="email"], 
+        textarea, 
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: 16px;
+        }
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .document-list {
+            margin-top: 20px;
+        }
+        .document-item {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+        }
+        .document-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .document-title {
+            font-weight: bold;
+            font-size: 18px;
+            color: #2c3e50;
+        }
+        .document-status {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+        .status-waiting {
+            background-color: #f39c12;
+            color: white;
+        }
+        .status-approved {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .status-rejected {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .document-meta {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .document-content {
+            margin-top: 10px;
+            white-space: pre-wrap;
+        }
+        .review-controls {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        .btn-approve {
+            background-color: #2ecc71;
+        }
+        .btn-approve:hover {
+            background-color: #27ae60;
+        }
+        .btn-reject {
+            background-color: #e74c3c;
+        }
+        .btn-reject:hover {
+            background-color: #c0392b;
+        }
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+            color: #7f8c8d;
+        }
+        .detail-view {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #fff;
+        }
+        .template-item {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+        }
+        .template-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        .template-description {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .template-actions {
+            margin-top: 10px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            background-color: #fff;
+            border-bottom: 1px solid #eee;
+        }
+        .user-role {
+            background-color: #3498db;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        .role-admin {
+            background-color: #9b59b6;
+        }
+        .role-teacher {
+            background-color: #3498db;
+        }
+        .role-student {
+            background-color: #2ecc71;
+        }
+        .logout-btn {
+            background-color: transparent;
+            color: #3498db;
+            border: 1px solid #3498db;
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        .logout-btn:hover {
+            background-color: #f5f5f5;
+        }
+        .auth-form {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+        }
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background-color: #f5f5f5;
+            cursor: pointer;
+        }
+        .auth-tab.active {
+            background-color: #3498db;
+            color: white;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .registration-request {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+        }
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .request-user {
+            font-weight: bold;
+        }
+        .hidden {
+            display: none;
+        }
+        .template-upload {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px dashed #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div id="auth-page" class="card auth-form">
+        <div class="logo">Система документооборота</div>
+        <div class="auth-tabs">
+            <div class="auth-tab active" data-form="login-form">Вход</div>
+            <div class="auth-tab" data-form="register-form">Регистрация</div>
+        </div>
+        
+        <form id="login-form" class="auth-form-content">
+            <div class="form-group">
+                <label for="login-username">Имя пользователя:</label>
+                <input type="text" id="login-username" required>
+            </div>
+            <div class="form-group">
+                <label for="login-password">Пароль:</label>
+                <input type="password" id="login-password" required>
+            </div>
+            <button type="submit">Войти</button>
+            <div id="login-message" class="message" style="display: none;"></div>
+        </form>
+        
+        <form id="register-form" class="auth-form-content" style="display: none;">
+            <div class="form-group">
+                <label for="reg-username">Имя пользователя:</label>
+                <input type="text" id="reg-username" required>
+            </div>
+            <div class="form-group">
+                <label for="reg-email">Email:</label>
+                <input type="email" id="reg-email" required>
+            </div>
+            <div class="form-group">
+                <label for="reg-fullname">Полное имя:</label>
+                <input type="text" id="reg-fullname" required>
+            </div>
+            <div class="form-group">
+                <label for="reg-password">Пароль:</label>
+                <input type="password" id="reg-password" required>
+            </div>
+            <div class="form-group">
+                <label for="reg-role">Роль:</label>
+                <select id="reg-role" required>
+                    <option value="студент">Студент</option>
+                    <option value="преподаватель">Преподаватель</option>
+                </select>
+            </div>
+            <button type="submit">Зарегистрироваться</button>
+            <div id="register-message" class="message" style="display: none;"></div>
+        </form>
+    </div>
+    
+    <div id="app-page" style="display: none;">
+        <div class="user-info">
+            <div>
+                <span id="user-fullname"></span>
+                <span id="user-role" class="user-role"></span>
+            </div>
+            <button id="logout-btn" class="logout-btn">Выйти</button>
+        </div>
+        
+        <div class="container">
+            <h1>Система документооборота</h1>
+            
+            <div id="message-container"></div>
+            
+            <div class="tabs">
+                <div class="tab active" data-tab="create">Создать документ</div>
+                <div class="tab" data-tab="list">Мои документы</div>
+                <div class="tab" data-tab="templates">Шаблоны</div>
+                <div class="tab admin-only" data-tab="all-documents" style="display: none;">Все документы</div>
+                <div class="tab admin-only" data-tab="registration-requests" style="display: none;">Заявки на регистрацию</div>
+                <div class="tab admin-only" data-tab="manage-templates" style="display: none;">Управление шаблонами</div>
+            </div>
+            
+            <div id="createTab" class="tab-content active card">
+                <h2>Создание нового документа</h2>
+                <form id="createDocumentForm">
+                    <div class="form-group">
+                        <label for="title">Название документа:</label>
+                        <input type="text" id="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="content">Содержание документа:</label>
+                        <textarea id="content" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="template-type">Тип шаблона (если используется):</label>
+                        <select id="template-type">
+                            <option value="">Не использовать шаблон</option>
+                            <!-- Опции будут добавлены динамически -->
+                        </select>
+                    </div>
+                    <button type="submit">Отправить документ</button>
+                </form>
+            </div>
+            
+            <div id="listTab" class="tab-content card">
+                <h2>Мои документы</h2>
+                <div id="documentList" class="document-list">
+                    <div class="empty-state">
+                        <p>Загрузка документов...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="templatesTab" class="tab-content card">
+                <h2>Шаблоны документов</h2>
+                <div id="templateList" class="template-list">
+                    <div class="empty-state">
+                        <p>Загрузка шаблонов...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="all-documentsTab" class="tab-content card">
+                <h2>Все документы</h2>
+                <div id="allDocumentList" class="document-list">
+                    <div class="empty-state">
+                        <p>Загрузка документов...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="registration-requestsTab" class="tab-content card">
+                <h2>Заявки на регистрацию</h2>
+                <div id="requestList" class="request-list">
+                    <div class="empty-state">
+                        <p>Загрузка заявок...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="manage-templatesTab" class="tab-content card">
+                <h2>Управление шаблонами</h2>
+                <div id="adminTemplateList" class="template-list">
+                    <div class="empty-state">
+                        <p>Загрузка шаблонов...</p>
+                    </div>
+                </div>
+                
+                <div class="template-upload">
+                    <h3>Загрузить новый шаблон</h3>
+                    <form id="uploadTemplateForm">
+                        <div class="form-group">
+                            <label for="template-name">Название шаблона:</label>
+                            <input type="text" id="template-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="template-description">Описание:</label>
+                            <textarea id="template-description"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="template-file">PDF файл шаблона:</label>
+                            <input type="file" id="template-file" accept=".pdf" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Доступен для:</label>
+                            <div style="margin-top: 10px;">
+                                <input type="checkbox" id="available-students" checked>
+                                <label for="available-students" style="display: inline;">Студентов</label>
+                            </div>
+                            <div style="margin-top: 5px;">
+                                <input type="checkbox" id="available-teachers" checked>
+                                <label for="available-teachers" style="display: inline;">Преподавателей</label>
+                            </div>
+                        </div>
+                        <button type="submit">Загрузить шаблон</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div id="documentDetailDialog" class="card hidden">
+                <h2>Просмотр документа</h2>
+                <div id="documentDetail">
+                    <!-- Содержимое будет добавлено динамически -->
+                </div>
+                <div style="text-align: right; margin-top: 20px;">
+                    <button id="closeDetailBtn">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Базовый URL API
+        const API_URL = 'http://localhost:8000';
+        
+        // Состояние приложения
+        const state = {
+            token: localStorage.getItem('token'),
+            user: JSON.parse(localStorage.getItem('user') || 'null'),
+            currentTab: 'create'
+        };
+        
+        // При загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            // Инициализация аутентификации
+            initAuth();
+            
+            // Вкладки аутентификации
+            document.querySelectorAll('.auth-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.auth-form-content').forEach(f => f.style.display = 'none');
+                    
+                    tab.classList.add('active');
+                    document.getElementById(tab.getAttribute('data-form')).style.display = 'block';
+                });
+            });
+            
+            // Форма входа
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const username = document.getElementById('login-username').value;
+                const password = document.getElementById('login-password').value;
+                
+                try {
+                    const formData = new FormData();
+                    formData.append('username', username);
+                    formData.append('password', password);
+                    
+                    const response = await fetch(`${API_URL}/auth/token`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        // Сохраняем токен
+                        localStorage.setItem('token', data.access_token);
+                        state.token = data.access_token;
+                        
+                        // Получаем информацию о пользователе
+                        await fetchUserInfo();
+                        
+                        // Показываем основное приложение
+                        showApp();
+                    } else {
+                        const error = await response.json();
+                        showAuthMessage('login-message', error.detail || 'Ошибка входа', 'error');
+                    }
+                } catch (error) {
+                    showAuthMessage('login-message', `Ошибка: ${error.message}`, 'error');
+                }
+            });
+            
+            // Форма регистрации
+            document.getElementById('register-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const username = document.getElementById('reg-username').value;
+                const email = document.getElementById('reg-email').value;
+                const fullName = document.getElementById('reg-fullname').value;
+                const password = document.getElementById('reg-password').value;
+                const role = document.getElementById('reg-role').value;
+                
+                try {
+                    const response = await fetch(`${API_URL}/auth/register`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username,
+                            email,
+                            full_name: fullName,
+                            password,
+                            requested_role: role
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        showAuthMessage('register-message', 'Регистрация успешна! Ожидайте подтверждения администратором.', 'success');
+                        // Сбрасываем форму
+                        document.getElementById('register-form').reset();
+                        // Переключаемся на вкладку входа
+                        document.querySelector('.auth-tab[data-form="login-form"]').click();
+                    } else {
+                        const error = await response.json();
+                        showAuthMessage('register-message', error.detail || 'Ошибка регистрации', 'error');
+                    }
+                } catch (error) {
+                    showAuthMessage('register-message', `Ошибка: ${error.message}`, 'error');
+                }
+            });
+            
+            // Кнопка выхода
+            document.getElementById('logout-btn').addEventListener('click', () => {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                state.token = null;
+                state.user = null;
+                showAuth();
+            });
+            
+            // Вкладки приложения
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Убрать активный класс со всех вкладок
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    // Добавить активный класс выбранной вкладке
+                    tab.classList.add('active');
+                    const tabId = tab.getAttribute('data-tab');
+                    document.getElementById(tabId + 'Tab').classList.add('active');
+                    state.currentTab = tabId;
+                    
+                    // Загрузка данных в зависимости от вкладки
+                    if (tabId === 'list') {
+                        loadUserDocuments();
+                    } else if (tabId === 'all-documents') {
+                        loadAllDocuments();
+                    } else if (tabId === 'templates') {
+                        loadTemplates();
+                    } else if (tabId === 'registration-requests') {
+                        loadRegistrationRequests();
+                    } else if (tabId === 'manage-templates') {
+                        loadAllTemplates();
+                    }
+                });
+            });
+            
+            // Создание документа
+            document.getElementById('createDocumentForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const title = document.getElementById('title').value;
+                const content = document.getElementById('content').value;
+                const templateType = document.getElementById('template-type').value;
+                
+                try {
+                    const response = await fetchWithAuth(`${API_URL}/documents/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            title,
+                            content,
+                            template_type: templateType || null
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        showMessage('Документ успешно создан', 'success');
+                        document.getElementById('createDocumentForm').reset();
+                        
+                        // Переключиться на вкладку списка документов
+                        document.querySelector('.tab[data-tab="list"]').click();
+                    } else {
+                        const error = await response.json();
+                        showMessage(`Ошибка: ${error.detail || 'Не удалось создать документ'}`, 'error');
+                    }
+                } catch (error) {
+                    showMessage(`Ошибка: ${error.message}`, 'error');
+                }
+            });
+            
+            // Закрытие диалога документа
+            document.getElementById('closeDetailBtn').addEventListener('click', () => {
+                document.getElementById('documentDetailDialog').classList.add('hidden');
+            });
+            
+            // Загрузка шаблона
+            document.getElementById('uploadTemplateForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const name = document.getElementById('template-name').value;
+                const description = document.getElementById('template-description').value;
+                const file = document.getElementById('template-file').files[0];
+                const availableForStudents = document.getElementById('available-students').checked;
+                const availableForTeachers = document.getElementById('available-teachers').checked;
+                
+                if (!file) {
+                    showMessage('Выберите PDF файл шаблона', 'error');
+                    return;
+                }
+                
+                const formData = new FormData();
+                formData.append('name', name);
+                formData.append('description', description);
+                formData.append('available_for_students', availableForStudents);
+                formData.append('available_for_teachers', availableForTeachers);
+                formData.append('file', file);
+                
+                try {
+                    const response = await fetchWithAuth(`${API_URL}/templates/`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (response.ok) {
+                        showMessage('Шаблон успешно загружен', 'success');
+                        document.getElementById('uploadTemplateForm').reset();
+                        loadAllTemplates();
+                    } else {
+                        const error = await response.json();
+                        showMessage(`Ошибка: ${error.detail || 'Не удалось загрузить шаблон'}`, 'error');
+                    }
+                } catch (error) {
+                    showMessage(`Ошибка: ${error.message}`, 'error');
+                }
+            });
+        });
+        
+        // Инициализация аутентификации
+        async function initAuth() {
+            if (state.token) {
+                try {
+                    // Проверяем валидность токена
+                    await fetchUserInfo();
+                    showApp();
+                } catch (error) {
+                    // Если токен невалиден, показываем страницу входа
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    state.token = null;
+                    state.user = null;
+                    showAuth();
+                }
+            } else {
+                showAuth();
+            }
+        }
+        
+        // Получение информации о пользователе
+        async function fetchUserInfo() {
+            try {
+                const response = await fetchWithAuth(`${API_URL}/users/me`);
+                if (response.ok) {
+                    const user = await response.json();
+                    state.user = user;
+                    localStorage.setItem('user', JSON.stringify(user));
+                    return user;
+                } else {
+                    throw new Error('Не удалось получить информацию о пользователе');
+                }
+            } catch (error) {
+                throw error;
+            }
+        }
+        
+        // Показать страницу аутентификации
+        function showAuth() {
+            document.getElementById('auth-page').style.display = 'block';
+            document.getElementById('app-page').style.display = 'none';
+        }
+        
+        // Показать основное приложение
+        function showApp() {
+            document.getElementById('auth-page').style.display = 'none';
+            document.getElementById('app-page').style.display = 'block';
+            
+            // Показываем имя пользователя и роль
+            document.getElementById('user-fullname').textContent = state.user.full_name;
+            const userRole = document.getElementById('user-role');
+            userRole.textContent = state.user.role;
+            
+            // Добавляем класс в зависимости от роли
+            userRole.className = 'user-role';
+            if (state.user.role === 'админ') {
+                userRole.classList.add('role-admin');
+                // Показываем вкладки только для админа
+                document.querySelectorAll('.admin-only').forEach(el => {
+                    el.style.display = 'block';
+                });
+            } else if (state.user.role === 'преподаватель') {
+                userRole.classList.add('role-teacher');
+            } else {
+                userRole.classList.add('role-student');
+            }
+            
+            // Загружаем доступные шаблоны для создания документа
+            loadTemplateOptions();
+            
+            // Загружаем данные текущей вкладки
+            document.querySelector(`.tab[data-tab="${state.currentTab}"]`).click();
+        }
+        
+        // Функция для отображения сообщений аутентификации
+        function showAuthMessage(elementId, message, type) {
+            const messageElement = document.getElementById(elementId);
+            messageElement.textContent = message;
+            messageElement.className = `message ${type}`;
+            messageElement.style.display = 'block';
+            
+            // Скрыть сообщение через 5 секунд
+            setTimeout(() => {
+                messageElement.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Функция для отображения сообщений в приложении
+        function showMessage(message, type) {
+            const messageContainer = document.getElementById('message-container');
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${type}`;
+            messageElement.textContent = message;
+            
+            messageContainer.appendChild(messageElement);
+            
+            // Удалить сообщение через 5 секунд
+            setTimeout(() => {
+                messageElement.remove();
+            }, 5000);
+        }
+        
+        // Загрузка документов пользователя
+        async function loadUserDocuments() {
+            const documentList = document.getElementById('documentList');
+            documentList.innerHTML = '<div class="empty-state"><p>Загрузка документов...</p></div>';
+            
+            try {
+                const response = await fetchWithAuth(`${API_URL}/documents/`);
+                
+                if (response.ok) {
+                    const documents = await response.json();
+                    
+                    if (documents.length === 0) {
+                        documentList.innerHTML = '<div class="empty-state"><p>У вас пока нет документов</p></div>';
+                        return;
+                    }
+                    
+                    documentList.innerHTML = '';
+                    documents.forEach(doc => {
+                        renderDocumentItem(doc, documentList);
+                    });
+                } else {
+                    documentList.innerHTML = '<div class="empty-state"><p>Ошибка загрузки документов</p></div>';
+                }
+            } catch (error) {
+                documentList.innerHTML = `<div class="empty-state"><p>Ошибка: ${error.message}</p></div>`;
+            }
+        }
+
+        // Загрузка всех документов (для администраторов)
+        async function loadAllDocuments() {
+            const documentList = document.getElementById('allDocumentList');
+            documentList.innerHTML = '<div class="empty-state"><p>Загрузка документов...</p></div>';
+            
+            try {
+                const response = await fetchWithAuth(`${API_URL}/documents/all`);
+                
+                if (response.ok) {
+                    const documents = await response.json();
+                    
+                    if (documents.length === 0) {
+                        documentList.innerHTML = '<div class="empty-state"><p>Документы не найдены</p></div>';
+                        return;
+                    }
+                    
+                    documentList.innerHTML = '';
+                    documents.forEach(doc => {
+                        renderDocumentItem(doc, documentList, true);
+                    });
+                } else {
+                    documentList.innerHTML = '<div class="empty-state"><p>Ошибка загрузки документов</p></div>';
+                }
+            } catch (error) {
+                documentList.innerHTML = `<div class="empty-state"><p>Ошибка: ${error.message}</p></div>`;
+            }
+        }
+
+        // Отрисовка элемента документа
+        function renderDocumentItem(doc, container, showAuthor = false) {
+            const statusClass = doc.status === 'ожидает' ? 'status-waiting' : 
+                               doc.status === 'одобрено' ? 'status-approved' : 'status-rejected';
+            
+            const date = new Date(doc.created_at).toLocaleString('ru-RU');
+            
+            const docEl = document.createElement('div');
+            docEl.className = 'document-item';
+            
+            let authorInfo = '';
+            if (showAuthor) {
+                authorInfo = `<strong>Автор:</strong> ${doc.author_name} | `;
+            }
+            
+            docEl.innerHTML = `
+                <div class="document-header">
+                    <div class="document-title">${doc.title}</div>
+                    <div class="document-status ${statusClass}">${doc.status}</div>
+                </div>
+                <div class="document-meta">
+                    ${authorInfo}<strong>Создан:</strong> ${date}
+                </div>
+                <button class="view-document-btn" data-id="${doc.id}">Просмотреть</button>
+            `;
+            
+            container.appendChild(docEl);
+            
+            // Добавляем обработчик для кнопки просмотра
+            docEl.querySelector('.view-document-btn').addEventListener('click', () => {
+                loadDocumentDetail(doc.id);
+            });
+        }
+
+        // Загрузка деталей документа
+        async function loadDocumentDetail(documentId) {
+            const detailContainer = document.getElementById('documentDetail');
+            detailContainer.innerHTML = '<div class="empty-state"><p>Загрузка документа...</p></div>';
+            
+            // Показываем диалог
+            document.getElementById('documentDetailDialog').classList.remove('hidden');
+            
+            try {
+                const response = await fetchWithAuth(`${API_URL}/documents/${documentId}`);
+                
+                if (response.ok) {
+                    const doc = await response.json();
+                    const date = new Date(doc.created_at).toLocaleString('ru-RU');
+                    const statusClass = doc.status === 'ожидает' ? 'status-waiting' : 
+                                       doc.status === 'одобрено' ? 'status-approved' : 'status-rejected';
+                    
+                    const isAdmin = state.user.role === 'админ';
+                    
+                    detailContainer.innerHTML = `
+                        <div class="detail-view">
+                            <div class="document-header">
+                                <div class="document-title">${doc.title}</div>
+                                <div class="document-status ${statusClass}">${doc.status}</div>
+                            </div>
+                            <div class="document-meta">
+                                <strong>Автор:</strong> ${doc.author_name} | <strong>Создан:</strong> ${date}
+                            </div>
+                            <div class="document-content">
+                                ${doc.content}
+                            </div>
+                            ${isAdmin && doc.status === 'ожидает' ? `
+                                <div class="review-controls">
+                                    <button class="btn-approve" data-id="${doc.id}" data-status="одобрено">Одобрить</button>
+                                    <button class="btn-reject" data-id="${doc.id}" data-status="отклонено">Отклонить</button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                    
+                    // Добавляем обработчики для кнопок изменения статуса
+                    if (isAdmin && doc.status === 'ожидает') {
+                        detailContainer.querySelectorAll('.btn-approve, .btn-reject').forEach(button => {
+                            button.addEventListener('click', async () => {
+                                const docId = button.getAttribute('data-id');
+                                const status = button.getAttribute('data-status');
+                                
+                                try {
+                                    const response = await fetchWithAuth(`${API_URL}/documents/${docId}/review`, {
+                                        method: 'PATCH',
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify({
+                                            status
+                                        })
+                                    });
+                                    
+                                    if (response.ok) {
+                                        showMessage(`Статус документа изменен на "${status}"`, 'success');
+                                        // Обновляем детали документа
+                                        loadDocumentDetail(docId);
+                                        // Обновляем списки документов
+                                        if (state.currentTab === 'list') {
+                                            loadUserDocuments();
+                                        } else if (state.currentTab === 'all-documents') {
+                                            loadAllDocuments();
+                                        }
+                                    } else {
+                                        const error = await response.json();
+                                        showMessage(`Ошибка: ${error.detail || 'Не удалось изменить статус'}`, 'error');
+                                    }
+                                } catch (error) {
+                                    showMessage(`Ошибка: ${error.message}`, 'error');
+                                }
+                            });
+                        });
+                    }
+                } else {
+                    detailContainer.innerHTML = '<div class="empty-state"><p>Документ не найден</p></div>';
+                }
+            } catch (error) {
+                detailContainer.innerHTML = `<div class="empty-state"><p>Ошибка: ${error.message}</p></div>`;
+            }
+        }
+
+        // Загрузка заявок на регистрацию
+        async function loadRegistrationRequests() {
+            const requestList = document.getElementById('requestList');
+            requestList.innerHTML = '<div class="empty-state"><p>Загрузка заявок...</p></div>';
+            
+            try {
+                const response = await fetchWithAuth(`${API_URL}/registration-requests/`);
+                
+                if (response.ok) {
+                    const requests = await response.json();
+                    
+                    if (requests.length === 0) {
+                        requestList.innerHTML = '<div class="empty-state"><p>Заявки на регистрацию не найдены</p></div>';
+                        return;
+                    }
+                    
+                    requestList.innerHTML = '';
+                    
+                    // Сначала показываем ожидающие заявки
+                    const pendingRequests = requests.filter(req => req.status === 'ожидает');
+                    if (pendingRequests.length > 0) {
+                        const pendingHeader = document.createElement('h3');
+                        pendingHeader.textContent = 'Ожидающие заявки';
+                        requestList.appendChild(pendingHeader);
+                        
+                        pendingRequests.forEach(req => {
+                            renderRegistrationRequest(req, requestList);
+                        });
+                    }
+                    
+                    // Затем показываем обработанные заявки
+                    const processedRequests = requests.filter(req => req.status !== 'ожидает');
+                    if (processedRequests.length > 0) {
+                        const processedHeader = document.createElement('h3');
+                        processedHeader.textContent = 'Обработанные заявки';
+                        requestList.appendChild(processedHeader);
+                        
+                        processedRequests.forEach(req => {
+                            renderRegistrationRequest(req, requestList);
+                        });
+                    }
+                } else {
+                    requestList.innerHTML = '<div class="empty-state"><p>Ошибка загрузки заявок</p></div>';
+                }
+            } catch (error) {
+                requestList.innerHTML = `<div class="empty-state"><p>Ошибка: ${error.message}</p></div>`;
+            }
+        }
+
+        // Отрисовка заявки на регистрацию
+        function renderRegistrationRequest(req, container) {
+            const statusClass = req.status === 'ожидает' ? 'status-waiting' : 
+                               req.status === 'одобрено' ? 'status-approved' : 'status-rejected';
+            
+            const date = new Date(req.created_at).toLocaleString('ru-RU');
+            
+            const reqEl = document.createElement('div');
+            reqEl.className = 'registration-request';
+            
+            reqEl.innerHTML = `
+                <div class="request-header">
+                    <div class="request-user">${req.user_full_name || 'Пользователь'}</div>
+                    <div class="document-status ${statusClass}">${req.status}</div>
+                </div>
+                <div class="document-meta">
+                    <strong>Запрошенная роль:</strong> ${req.requested_role} | 
+                    <strong>Создана:</strong> ${date}
+                </div>
+                ${req.comment ? `<div><strong>Комментарий:</strong> ${req.comment}</div>` : ''}
+                ${req.status === 'ожидает' ? `
+                    <div class="review-controls">
+                        <button class="btn-approve approve-request" data-id="${req.id}">Одобрить</button>
+                        <button class="btn-reject reject-request" data-id="${req.id}">Отклонить</button>
+                    </div>
+                ` : ''}
+            `;
+            
+            container.appendChild(reqEl);
+            
+            // Добавляем обработчики для кнопок
+            if (req.status === 'ожидает') {
+                reqEl.querySelector('.approve-request').addEventListener('click', () => {
+                    showRequestActionDialog(req.id, 'одобрено');
+                });
+                
+                reqEl.querySelector('.reject-request').addEventListener('click', () => {
+                    showRequestActionDialog(req.id, 'отклонено');
+                });
+            }
+        }
+
+        // Диалог для одобрения/отклонения заявки
+        function showRequestActionDialog(requestId, status) {
+            // Здесь можно реализовать диалог для ввода комментария
+            // В простом варианте используем prompt
+            let comment = '';
+            
+            if (status === 'отклонено') {
+                comment = prompt('Введите причину отклонения (необязательно):');
+            } else {
+                comment = prompt('Добавьте комментарий (необязательно):');
+            }
+            
+            updateRegistrationRequestStatus(requestId, status, comment);
+        }
+
+        // Обновление статуса заявки на регистрацию
+        async function updateRegistrationRequestStatus(requestId, status, comment) {
+            try {
+                const response = await fetchWithAuth(`${API_URL}/registration-requests/${requestId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        status,
+                        comment: comment || null
+                    })
+                });
+                
+                if (response.ok) {
+                    showMessage(`Заявка ${status === 'одобрено' ? 'одобрена' : 'отклонена'}`, 'success');
+                    loadRegistrationRequests();
+                } else {
+                    const error = await response.json();
+                    showMessage(`Ошибка: ${error.detail || 'Не удалось обновить статус заявки'}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`Ошибка: ${error.message}`, 'error');
+            }
+        }
+
+        // Загрузка шаблонов для селекта при создании документа
+        async function loadTemplateOptions() {
+            const select = document.getElementById('template-type');
+            
+            try {
+                const response = await fetchWithAuth(`${API_URL}/templates/`);
+                
+                if (response.ok) {
+                    const templates = await response.json();
+                    
+                    // Очищаем предыдущие опции, оставляя только первую
+                    while (select.options.length > 1) {
+                        select.remove(1);
+                    }
+                    
+                    // Добавляем новые опции
+                    templates.forEach(template => {
+                        const option = document.createElement('option');
+                        option.value = template.id;
+                        option.textContent = template.name;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки шаблонов:', error);
+            }
+        }
+
+        // Загрузка шаблонов для пользователя
+        async function loadTemplates() {
+            const templateList = document.getElementById('templateList');
+            templateList.innerHTML = '<div class="empty-state"><p>Загрузка шаблонов...</p></div>';
+            
+            try {
+                const response = await fetchWithAuth(`${API_URL}/templates/`);
+                
+                if (response.ok) {
+                    const templates = await response.json();
+                    
+                    if (templates.length === 0) {
+                        templateList.innerHTML = '<div class="empty-state"><p>Доступные шаблоны не найдены</p></div>';
+                        return;
+                    }
+                    
+                    templateList.innerHTML = '';
+                    templates.forEach(template => {
+                        renderTemplate(template, templateList);
+                    });
+                } else {
+                    templateList.innerHTML = '<div class="empty-state"><p>Ошибка загрузки шаблонов</p></div>';
+                }
+            } catch (error) {
+                templateList.innerHTML = `<div class="empty-state"><p>Ошибка: ${error.message}</p></div>`;
+            }
+        }
+
+        // Загрузка всех шаблонов для администратора
+        async function loadAllTemplates() {
+            const templateList = document.getElementById('adminTemplateList');
+            templateList.innerHTML = '<div class="empty-state"><p>Загрузка шаблонов...</p></div>';
+            
+            try {
+                const response = await fetchWithAuth(`${API_URL}/templates/all`);
+                
+                if (response.ok) {
+                    const templates = await response.json();
+                    
+                    if (templates.length === 0) {
+                        templateList.innerHTML = '<div class="empty-state"><p>Шаблоны не найдены</p></div>';
+                        return;
+                    }
+                    
+                    templateList.innerHTML = '';
+                    templates.forEach(template => {
+                        renderTemplate(template, templateList, true);
+                    });
+                } else {
+                    templateList.innerHTML = '<div class="empty-state"><p>Ошибка загрузки шаблонов</p></div>';
+                }
+            } catch (error) {
+                templateList.innerHTML = `<div class="empty-state"><p>Ошибка: ${error.message}</p></div>`;
+            }
+        }
+
+        // Отрисовка шаблона
+        function renderTemplate(template, container, isAdmin = false) {
+            const templateEl = document.createElement('div');
+            templateEl.className = 'template-item';
+            
+            templateEl.innerHTML = `
+                <div class="template-title">${template.name}</div>
+                ${template.description ? `<div class="template-description">${template.description}</div>` : ''}
+                <div class="template-meta">
+                    <strong>Доступен для:</strong> 
+                    ${template.available_for_students ? 'Студентов' : ''} 
+                    ${template.available_for_students && template.available_for_teachers ? ' и ' : ''}
+                    ${template.available_for_teachers ? 'Преподавателей' : ''}
+                </div>
+                <div class="template-actions">
+                    <a href="${template.file_path}" target="_blank" class="btn">Скачать шаблон</a>
+                    ${isAdmin ? `
+                        <button class="btn-reject delete-template" data-id="${template.id}">Удалить</button>
+                    ` : ''}
+                </div>
+            `;
+            
+            container.appendChild(templateEl);
+            
+            // Добавляем обработчик для кнопки удаления
+            if (isAdmin) {
+                templateEl.querySelector('.delete-template').addEventListener('click', async () => {
+                    if (confirm('Вы уверены, что хотите удалить этот шаблон?')) {
+                        try {
+                            const response = await fetchWithAuth(`${API_URL}/templates/${template.id}`, {
+                                method: 'DELETE'
+                            });
+                            
+                            if (response.ok) {
+                                showMessage('Шаблон успешно удален', 'success');
+                                loadAllTemplates();
+                            } else {
+                                const error = await response.json();
+                                showMessage(`Ошибка: ${error.detail || 'Не удалось удалить шаблон'}`, 'error');
+                            }
+                        } catch (error) {
+                            showMessage(`Ошибка: ${error.message}`, 'error');
+                        }
+                    }
+                });
+            }
+        }
+
+        // Вспомогательная функция для запросов с токеном
+        async function fetchWithAuth(url, options = {}) {
+            // Если нет заголовков, создаем их
+            if (!options.headers) {
+                options.headers = {};
+            }
+            
+            // Добавляем заголовок авторизации
+            options.headers['Authorization'] = `Bearer ${state.token}`;
+            
+            // Выполняем запрос
+            const response = await fetch(url, options);
+            
+            // Если ответ 401 (не авторизован), перенаправляем на страницу входа
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                state.token = null;
+                state.user = null;
+                showAuth();
+                throw new Error('Сессия истекла. Пожалуйста, войдите снова.');
+            }
+            
+            return response;
+        }
+    </script>
+</body>
+</html>
